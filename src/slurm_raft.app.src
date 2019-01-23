@@ -1,0 +1,16 @@
+{application, slurm_raft,
+ [{description, "Wrapper of rabbitmq/ra for benchmarking with slurm"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {mod, { slurm_raft_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
