@@ -18,7 +18,7 @@ module load erlang/19.3
 # set these as needed
 NAME="raft_basic_counter"
 REPEATS=1
-BENCH_DURATION=1 # in minutes
+BENCH_DURATION=10 # in minutes
 RAFT_NODE_NUM=3
 
 LOAD_SERIES="1 2 4 8 16 32 64 128 256 512 1024 2048"
