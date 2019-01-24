@@ -28,7 +28,7 @@ start_link() ->
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    DataRoot = os:getenv("CONSENSUS_DATA_ROOT", "./data"),
+    DataRoot = os:getenv("RAFT_DATA_ROOT", "./data"),
     NodeDataDir = filename:join(DataRoot, atom_to_list(node())),
 
     ok = application:set_env(ra, data_dir, NodeDataDir),
