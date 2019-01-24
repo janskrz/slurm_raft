@@ -8,7 +8,7 @@
 -export([read/0, inc/0]).
 
 create(ErlangNodeStrings) when is_list(hd(ErlangNodeStrings)) ->
-    create([list_to_atom(X) || X <- ErlangNodeStrings]);
+    create([list_to_atom(lists:delete($', X)) || X <- ErlangNodeStrings]);
 
 create(ErlangNodes) ->
     ServerIds = [{counter_server, N} || N <- ErlangNodes],
@@ -16,11 +16,17 @@ create(ErlangNodes) ->
     {ok, ServersStarted, []} = ra:start_cluster(counter_cluster,
                                                 {simple, fun erlang:'+'/2, 0},
                                                 ServerIds),
-    ServersStarted.
+    io:format("Raft cluster started with nodes:~n~p~n", [ServersStarted]),
+    ok.
 
 
 %% Assumes that this node is included in the ErlangNodes list given in create...
-status([]) -> status().
+
+status([]) ->
+    Status = status(),
+    io:format("Raft cluster status:~n~p~n", [Status]),
+    ok.
+
 status() -> ra:members({counter_server, node()}).
 
 read() ->
