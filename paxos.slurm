@@ -11,6 +11,10 @@
 #SBATCH --exclusive
 #SBATCH -o run/bench_log.out
 
+## basho bench cannot handle erlang versions newer than 19
+module purge
+module laod erlang/19.3
+
 # set these as needed
 NAME="raft_basic_counter"
 REPEATS=1
