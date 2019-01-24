@@ -62,7 +62,7 @@ main(){
 
     log info "writing Hostlist: $HOSTLISTSTRING"
     echo $HOSTLISTSTRING >> $HOSTSFILE
-    #wait_for_benchmark_completion
+    wait_for_benchmark_completion
 
     log info "Shutting raft down..."
     for i in `seq 0 $((SLURM_JOB_NUM_NODES-1))`;
