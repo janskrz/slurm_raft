@@ -13,7 +13,7 @@
 
 ## basho bench cannot handle erlang versions newer than 19
 module purge
-module laod erlang/19.3
+module load erlang/19.3
 
 # set these as needed
 NAME="raft_basic_counter"
@@ -21,7 +21,7 @@ REPEATS=1
 BENCH_DURATION=1 # in minutes
 RAFT_NODE_NUM=3
 
-LOAD_SERIES="1"
+LOAD_SERIES="10"
 OP_SERIES="[{put,0},{get,1}]"
 
 # location of cmd log written by raft nodes
@@ -87,47 +87,47 @@ execute_benchmark(){
 
     wait_for_raft_startup
 
-    #log info "Writing basho_bench config"
-    #HOSTLIST=$(head -n1 $HOSTSFILE)
-    #log info "Raft hostlist is $HOSTLIST"
+    log info "Writing basho_bench config"
+    HOSTLIST=$(head -n1 $HOSTSFILE)
+    log info "Raft hostlist is $HOSTLIST"
 
-    #log info "Starting benchmark"
-    #declare -a lg_pids
-    #local c
-    #for i in $(seq 1 $LOAD_GENERATORS); do
-    #    PARALLEL_ID=$i # TODO: multiple load gens?
-    #    RANDOM_SEED="{$((7*$i)), $((11*$i)), $((5*$i))}"
-    #    CONFIG_FILE=${WD}/lg${i}.config
-    #    write_basho_config
+    log info "Starting benchmark"
+    declare -a lg_pids
+    local c
+    for i in $(seq 1 $LOAD_GENERATORS); do
+        PARALLEL_ID=$i
+        RANDOM_SEED="{$((7*$i)), $((11*$i)), $((5*$i))}"
+        CONFIG_FILE=${WD}/lg${i}.config
+        write_basho_config
 
-    #    local arg1=${BASHO_BENCH_DIR:+"--bbdir=$BASHO_BENCH_DIR"}
-    #    local arg2=${NAME:+"--name=$NAME"}
-    #    local arg3=${RAFT_SLURM_JOB_ID:+"--jobid=$RAFT_SLURM_JOB_ID"}
-    #    local arg4=${CONFIG_FILE:+"--config=$CONFIG_FILE"}
-    #    local arg5=${PARALLEL_ID:+"--parallel_id=$PARALLEL_ID"}
-    #    local arg6=${WD:+"--wd=$WD"}
-    #    local arg7=${WD:+"--rdir=$WD"}
-    #    declare -a args=($arg1 $arg2 $arg3 $arg4 $arg5 $arg6 $arg7)
+        local arg1=${BASHO_BENCH_DIR:+"--bbdir=$BASHO_BENCH_DIR"}
+        local arg2=${NAME:+"--name=$NAME"}
+        local arg3=${RAFT_SLURM_JOB_ID:+"--jobid=$RAFT_SLURM_JOB_ID"}
+        local arg4=${CONFIG_FILE:+"--config=$CONFIG_FILE"}
+        local arg5=${PARALLEL_ID:+"--parallel_id=$PARALLEL_ID"}
+        local arg6=${WD:+"--wd=$WD"}
+        local arg7=${WD:+"--rdir=$WD"}
+        declare -a args=($arg1 $arg2 $arg3 $arg4 $arg5 $arg6 $arg7)
 
-    #    host=${LG_HOSTLIST[$((c++))]}
-    #    echo "Starting LG on $host (Total nummber of LG hosts $LOAD_GENERATORS)"
-    #    if [[ $(hostname) = $host ]]; then
-    #        slurm/start_basho_bench.sh ${args[@]} &
-    #        lg_pids[$i]=$!
-    #    else
-    #        ARGSTRING=$(printf '%s ' "${args[@]}")
-    #        echo $ARGSTRING
-    #        echo $host
-    #        srun --nodelist=$host -N1 bash -c "$(pwd)/slurm/start_basho_bench.sh $ARGSTRING" &
-    #        lg_pids[$i]=$!
-    #    fi
+        host=${LG_HOSTLIST[$((c++))]}
+        echo "Starting LG on $host (Total nummber of LG hosts $LOAD_GENERATORS)"
+        if [[ $(hostname) = $host ]]; then
+            slurm/start_basho_bench.sh ${args[@]} &
+            lg_pids[$i]=$!
+        else
+            ARGSTRING=$(printf '%s ' "${args[@]}")
+            echo $ARGSTRING
+            echo $host
+            srun --nodelist=$host -N1 bash -c "$(pwd)/slurm/start_basho_bench.sh $ARGSTRING" &
+            lg_pids[$i]=$!
+        fi
 
-    #done
+    done
 
-    ## wait for load generators to finish
-    #for pid in "${lg_pids[@]}"; do
-    #    wait $pid
-    #done
+    # wait for load generators to finish
+    for pid in "${lg_pids[@]}"; do
+        wait $pid
+    done
 
     # remove hostfile so that raft management job can tear down the nodes
     rm_hostsfile
