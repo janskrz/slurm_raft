@@ -31,7 +31,7 @@ status() -> ra:members({counter_server, node()}).
 
 read() ->
     {ok, Result, _Leader} = ra:consistent_query({counter_server, node()}, fun (S) -> S end),
-    Result.
+    {ok, Result}.
 
 inc() ->
     {ok, _Reply, _Leader} = ra:process_command({counter_server, node()}, 1),
