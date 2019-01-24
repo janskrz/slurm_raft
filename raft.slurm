@@ -21,8 +21,8 @@ REPEATS=1
 BENCH_DURATION=1 # in minutes
 RAFT_NODE_NUM=3
 
-LOAD_SERIES="10"
-OP_SERIES="[{put,0},{get,1}]"
+LOAD_SERIES="1 2 4 8 16 32 64 128 256 512 1024 2048"
+OP_SERIES="[{put,0},{get,1}] [{put,1},{get,19}] [{put,1},{get,9}] [{put,1},{get,1}] [{put,1},{get,0}]"
 
 # location of cmd log written by raft nodes
 # WARNING: will be cleared !!!!
