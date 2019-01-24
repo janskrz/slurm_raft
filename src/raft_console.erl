@@ -3,9 +3,12 @@
 
 -module(raft_console).
 
--export([create/1, status/0]).
+-export([create/1, status/1, status/0]).
 
 -export([read/0, inc/0]).
+
+create(ErlangNodeStrings) when is_list(hd(ErlangNodeStrings)) ->
+    create([list_to_atom(X) || X <- ErlangNodeStrings]);
 
 create(ErlangNodes) ->
     ServerIds = [{counter_server, N} || N <- ErlangNodes],
@@ -17,6 +20,7 @@ create(ErlangNodes) ->
 
 
 %% Assumes that this node is included in the ErlangNodes list given in create...
+status([]) -> status().
 status() -> ra:members({counter_server, node()}).
 
 read() ->
