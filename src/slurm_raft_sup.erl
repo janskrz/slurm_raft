@@ -29,9 +29,11 @@ start_link() ->
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
     DataRoot = os:getenv("RAFT_DATA_ROOT", "./data"),
+    PayloadSize = os:getenv("RAFT_COUNTER_PAYLOAD", "0"),
     NodeDataDir = filename:join(DataRoot, atom_to_list(node())),
 
     ok = application:set_env(ra, data_dir, NodeDataDir),
+    ok = application:set_env(ra, payload_size, list_to_integer(PayloadSize)),
 
     RaftChildSup = {ra_sup,
                     {ra_sup, start_link, []},

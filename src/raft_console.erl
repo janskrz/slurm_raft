@@ -5,7 +5,7 @@
 
 -export([create/1, status/1, status/0]).
 
--export([read/0, inc/0]).
+-export([read/0, inc/0, inc/1]).
 
 create(ErlangNodeStrings) when is_list(hd(ErlangNodeStrings)) ->
     create([list_to_atom(lists:delete($', X)) || X <- ErlangNodeStrings]);
@@ -13,9 +13,13 @@ create(ErlangNodeStrings) when is_list(hd(ErlangNodeStrings)) ->
 create(ErlangNodes) ->
     ServerIds = [{counter_server, N} || N <- ErlangNodes],
 
-    {ok, ServersStarted, []} = ra:start_cluster(counter_cluster,
-                                                {simple, fun erlang:'+'/2, 0},
-                                                ServerIds),
+    {ok, PayloadSize} = application:get_env(ra, payload_size),
+    StateMachineConfig = #{
+            payload_size => PayloadSize
+        },
+    StateMachine = {module, data_counter, StateMachineConfig},
+
+    {ok, ServersStarted, []} = ra:start_cluster(counter_cluster, StateMachine, ServerIds),
     io:format("Raft cluster started with nodes:~n~p~n", [ServersStarted]),
     ok.
 
@@ -30,9 +34,14 @@ status([]) ->
 status() -> ra:members({counter_server, node()}).
 
 read() ->
-    {ok, Result, _Leader} = ra:consistent_query({counter_server, node()}, fun (S) -> S end),
+    {ok, Result, _Leader} = ra:process_command({counter_server, node()}, {read}),
     {ok, Result}.
 
 inc() ->
-    {ok, _Reply, _Leader} = ra:process_command({counter_server, node()}, 1),
+    {ok, _Reply, _Leader} = ra:process_command({counter_server, node()}, {inc}),
     ok.
+
+inc(Data) ->
+    {ok, _Reply, _Leader} = ra:process_command({counter_server, node()}, {inc, Data}),
+    ok.
+

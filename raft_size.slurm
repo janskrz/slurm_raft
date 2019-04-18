@@ -6,7 +6,9 @@
 # 4. Once ensamble is done start basho-bench
 
 #SBATCH -J load_gen_basho
-#SBATCH -N 3
+#SBATCH -N 2
+#SBATCH --nodelist=cumu02-[00-01]
+#SBATCH -p CUMU2
 #SBATCH -t 3-10:00:00
 #SBATCH --exclusive
 #SBATCH -o run/bench_log.out
@@ -16,13 +18,18 @@ module purge
 module load erlang/19.3
 
 # set these as needed
-NAME="raft_basic_counter"
+NAME="rbrpaper_raft_size_counter_repeat_write_only"
 REPEATS=1
 BENCH_DURATION=10 # in minutes
 RAFT_NODE_NUM=3
 
-LOAD_SERIES="1 2 4 8 16 32 64 128 256 512 1024 2048"
-OP_SERIES="[{put,0},{get,1}] [{put,1},{get,19}] [{put,1},{get,9}] [{put,1},{get,1}] [{put,1},{get,0}]"
+LOAD="256" # per load generator
+SIZE_SERIES="32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536"
+OP_SERIES="[{put,1},{get,0}]"
+
+# basho_bench_driver_raft -> command and data size increases
+# bash_bench_driver_raft_fixed_cmd -> only data size increases
+DRIVER="basho_bench_driver_raft"
 
 # location of cmd log written by raft nodes
 # WARNING: will be cleared !!!!
@@ -44,18 +51,20 @@ LG_HOSTLIST=($LG_HOSTLIST)
 ##### script starts here
 main(){
 
-    for WORKERS in $LOAD_SERIES; do
+    WORKERS=$LOAD
+    for SIZE in $SIZE_SERIES; do
         local count=0
         for OPS in $OP_SERIES; do
             let "count++"
             log info "Number of LGs: $LOAD_GENERATORS"
             log info "LG hostlist: ${LG_HOSTLIST[*]}"
             log info "Workers per LG: $WORKERS"
+            log info "Size of counter payload: $SIZE"
             log info "Operations: $OPS"
-
+            export RAFT_COUNTER_PAYLOAD=$SIZE
             for R in $(seq 1 $REPITITIONS); do
                 log info "Repitition: $R"
-                BENCH_NAME=$(printf "load%05i-$count-r$R" $((WORKERS*LOAD_GENERATORS)))
+                BENCH_NAME=$(printf "size%05i-$count-r$R" $((SIZE)))
                 export WD="$WD_PREFIX/$BENCH_NAME"
 
                 execute_benchmark
@@ -168,10 +177,10 @@ write_basho_config() {
 {duration, $BENCH_DURATION}.
 {concurrent, $WORKERS}.
 {operations, $OPS}.
-{driver, basho_bench_driver_raft}.
+{driver, $DRIVER}.
 {key_generator, {int_to_str, {uniform_int, $max_key}}}.
 %% size in Bytes
-{value_generator, {fixed_bin, 1}}.
+{value_generator, {fixed_bin, $RAFT_COUNTER_PAYLOAD}}.
 
 {report_interval, 1}.
 {log_level, info}.
