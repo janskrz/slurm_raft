@@ -18,14 +18,14 @@ module purge
 module load erlang/19.3
 
 # set these as needed
-NAME="rbrpaper_raft_size_counter_repeat_write_only"
+NAME="rbrpaper_raft_size_counter_direct_leader6"
 REPEATS=1
 BENCH_DURATION=10 # in minutes
 RAFT_NODE_NUM=3
 
 LOAD="256" # per load generator
-SIZE_SERIES="32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536"
-OP_SERIES="[{put,1},{get,0}]"
+SIZE_SERIES="32768 65536"
+OP_SERIES="[{put,1},{get,1}]"
 
 # basho_bench_driver_raft -> command and data size increases
 # bash_bench_driver_raft_fixed_cmd -> only data size increases

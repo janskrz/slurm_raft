@@ -15,8 +15,8 @@ init(Config) ->
     {0, Payload}.
 
 apply(_Meta, {read}, State) ->
-    {Counter, _Data} = State,
-    {State, Counter, []};
+    {Counter, Data} = State,
+    {State, {Counter, Data}, []};
 
 apply(_Meta, {inc}, State) ->
     {Counter, Data} = State,
